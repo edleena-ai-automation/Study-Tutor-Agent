@@ -18,4 +18,4 @@ A simple AI Study Tutor built with:
 
 ## Deployment
 
-The application is designed to be deployed on Render using GitHub.
+The application is designed to be deployed on Streamlit using GitHub.
