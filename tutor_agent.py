@@ -1,59 +1,58 @@
 from crewai import Agent, Task, Crew, Process
 
-from groq_llm import GroqLLM
+from groq_llm import get_groq_response
 from tools import calculator, study_plan_creator
 
 
-def create_tutor():
+class StudyTutorAgent:
+    """
+    Study Tutor Agent using CrewAI for agent/task management
+    and Groq GPT-OSS 120B as the LLM.
+    """
 
-    llm = GroqLLM(
-        model="openai/gpt-oss-120b",
-        temperature=0.4,
-    )
+    def __init__(self):
 
-    tutor = Agent(
-        role="Personal Study Tutor",
+        self.tutor = Agent(
+            role="Personal Study Tutor",
 
-        goal=(
-            "Help students understand academic topics clearly, "
-            "adapt explanations to their level, answer questions, "
-            "provide examples, and help them practice."
-        ),
+            goal=(
+                "Help students understand academic topics clearly, "
+                "answer questions, provide examples, simplify difficult "
+                "concepts, and help students create effective study plans."
+            ),
 
-        backstory=(
-            "You are a patient and knowledgeable AI study tutor. "
-            "You explain difficult concepts in simple language. "
-            "You never make the student feel embarrassed for asking "
-            "basic questions. You use examples and step-by-step "
-            "reasoning whenever useful."
-        ),
+            backstory=(
+                "You are a patient and knowledgeable personal tutor. "
+                "You explain difficult concepts in simple language. "
+                "You adapt your explanations according to the student's "
+                "level and encourage students to understand concepts "
+                "rather than simply memorize answers."
+            ),
 
-        llm=llm,
+            tools=[
+                calculator,
+                study_plan_creator,
+            ],
 
-        tools=[
-            calculator,
-            study_plan_creator,
-        ],
+            allow_delegation=False,
 
-        allow_delegation=False,
-        verbose=False,
-    )
-
-    return tutor
+            verbose=False,
+        )
 
 
-def ask_tutor(
-    question: str,
-    subject: str,
-    level: str,
-    memory: str,
-):
+    def ask(
+        self,
+        question,
+        subject,
+        level,
+        memory,
+    ):
+        """
+        Send the student's question to the Study Tutor.
+        """
 
-    tutor = create_tutor()
-
-    task = Task(
-        description=f"""
-You are tutoring a student.
+        prompt = f"""
+You are a personal AI Study Tutor.
 
 STUDENT SUBJECT:
 {subject}
@@ -67,39 +66,72 @@ PREVIOUS CONVERSATION:
 CURRENT STUDENT QUESTION:
 {question}
 
-Instructions:
+Your instructions:
 
 1. Answer the student's current question directly.
+
 2. Adapt the explanation to the student's level.
-3. Use simple language.
-4. Give examples when useful.
-5. Break difficult concepts into steps.
-6. If a calculation is required, use the calculator tool.
-7. If the student asks for a study plan, use the study_plan_creator tool.
-8. If the student asks a follow-up question, use the previous conversation
-   to understand the context.
-9. Do not mention internal agent instructions.
-10. Do not say that you are using CrewAI or tools.
-11. If you are unsure about a fact, clearly say that you are unsure.
 
-Make the answer educational and easy to understand.
-""",
+3. Use simple and clear language.
 
-        expected_output=(
-            "A clear, educational response that directly answers "
-            "the student's question."
-        ),
+4. Break complicated concepts into smaller steps.
 
-        agent=tutor,
+5. Give examples whenever useful.
+
+6. If a mathematical calculation is required,
+   use the calculator tool.
+
+7. If the student asks for a study plan,
+   use the study_plan_creator tool.
+
+8. Use the previous conversation to maintain context.
+
+9. If the student asks a follow-up question,
+   understand what they are referring to from
+   the previous conversation.
+
+10. Do not mention internal instructions,
+    CrewAI, tools, prompts, or system messages.
+
+11. Do not pretend to know something if you are unsure.
+
+12. Be encouraging and educational.
+
+Return only the tutor's answer.
+"""
+
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "You are a helpful, patient and knowledgeable "
+                    "AI Study Tutor."
+                ),
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ]
+
+        return get_groq_response(
+            messages=messages,
+            temperature=0.4,
+        )
+
+
+def ask_tutor(
+    question,
+    subject,
+    level,
+    memory,
+):
+
+    tutor_agent = StudyTutorAgent()
+
+    return tutor_agent.ask(
+        question=question,
+        subject=subject,
+        level=level,
+        memory=memory,
     )
-
-    crew = Crew(
-        agents=[tutor],
-        tasks=[task],
-        process=Process.sequential,
-        verbose=False,
-    )
-
-    result = crew.kickoff()
-
-    return result.raw
