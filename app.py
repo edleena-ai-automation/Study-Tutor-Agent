@@ -10,86 +10,214 @@ from memory import (
 from tutor_agent import ask_tutor
 
 
-# --------------------------------------------------
-# PAGE CONFIG
-# --------------------------------------------------
+# ==================================================
+# PAGE CONFIGURATION
+# ==================================================
 
 st.set_page_config(
     page_title="Study Tutor AI",
     page_icon="🎓",
     layout="wide",
+    initial_sidebar_state="expanded",
 )
 
 
-# --------------------------------------------------
+# ==================================================
 # CUSTOM CSS
-# --------------------------------------------------
+# ==================================================
 
 st.markdown(
     """
     <style>
 
+    /* Main background */
+
     .stApp {
         background:
             radial-gradient(
-                circle at top right,
-                rgba(0, 153, 255, 0.18),
-                transparent 35%
+                circle at 10% 10%,
+                rgba(0, 191, 255, 0.12),
+                transparent 30%
             ),
             radial-gradient(
-                circle at bottom left,
-                rgba(0, 255, 255, 0.10),
+                circle at 90% 90%,
+                rgba(0, 102, 255, 0.12),
                 transparent 30%
             ),
             #07111f;
-        color: #f8fafc;
     }
 
-    .main-title {
-        font-size: 3rem;
+
+    /* Main content */
+
+    .block-container {
+        max-width: 1200px;
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+    }
+
+
+    /* Header */
+
+    .hero-title {
+        font-size: 3.2rem;
         font-weight: 800;
+        line-height: 1.1;
+
         background: linear-gradient(
             90deg,
             #38bdf8,
             #22d3ee,
             #60a5fa
         );
+
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0;
+
+        margin-bottom: 5px;
     }
 
-    .subtitle {
+
+    .hero-subtitle {
         color: #94a3b8;
         font-size: 1.1rem;
-        margin-bottom: 2rem;
+        margin-bottom: 30px;
     }
 
-    .info-card {
+
+    /* Cards */
+
+    .feature-card {
         background: rgba(15, 23, 42, 0.75);
-        border: 1px solid rgba(56, 189, 248, 0.25);
+
+        border: 1px solid rgba(
+            56,
+            189,
+            248,
+            0.20
+        );
+
         border-radius: 18px;
+
         padding: 20px;
-        margin-bottom: 20px;
+
         box-shadow:
-            0 0 30px rgba(14, 165, 233, 0.08);
+            0 0 25px rgba(
+                14,
+                165,
+                233,
+                0.06
+            );
     }
+
+
+    /* Sidebar */
+
+    section[data-testid="stSidebar"] {
+
+        background:
+            linear-gradient(
+                180deg,
+                #081526,
+                #050d18
+            );
+
+        border-right:
+            1px solid rgba(
+                56,
+                189,
+                248,
+                0.15
+            );
+    }
+
+
+    /* Buttons */
 
     .stButton > button {
+
+        width: 100%;
+
         border-radius: 12px;
-        border: 1px solid rgba(56, 189, 248, 0.4);
-        background: linear-gradient(
-            135deg,
-            #0284c7,
-            #2563eb
-        );
+
+        border:
+            1px solid rgba(
+                56,
+                189,
+                248,
+                0.35
+            );
+
+        background:
+            linear-gradient(
+                135deg,
+                #0284c7,
+                #2563eb
+            );
+
         color: white;
+
         font-weight: 700;
+
+        transition: 0.2s;
     }
 
+
     .stButton > button:hover {
+
         border-color: #67e8f9;
-        box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+
+        box-shadow:
+            0 0 20px rgba(
+                34,
+                211,
+                238,
+                0.25
+            );
+    }
+
+
+    /* Chat input */
+
+    div[data-testid="stChatInput"] {
+
+        border-color:
+            rgba(
+                56,
+                189,
+                248,
+                0.3
+            );
+    }
+
+
+    /* Select boxes */
+
+    div[data-baseweb="select"] > div {
+
+        background-color:
+            rgba(
+                15,
+                23,
+                42,
+                0.8
+            );
+
+        border-radius: 10px;
+    }
+
+
+    /* Divider */
+
+    hr {
+
+        border-color:
+            rgba(
+                56,
+                189,
+                248,
+                0.12
+            );
     }
 
     </style>
@@ -98,40 +226,33 @@ st.markdown(
 )
 
 
-# --------------------------------------------------
-# MEMORY INITIALIZATION
-# --------------------------------------------------
+# ==================================================
+# INITIALIZE MEMORY
+# ==================================================
 
 initialize_memory()
 
 
-# --------------------------------------------------
-# HEADER
-# --------------------------------------------------
-
-st.markdown(
-    '<div class="main-title">🎓 Study Tutor AI</div>',
-    unsafe_allow_html=True,
-)
-
-st.markdown(
-    '<div class="subtitle">'
-    'Your personal AI tutor for learning, practice and study planning.'
-    '</div>',
-    unsafe_allow_html=True,
-)
-
-
-# --------------------------------------------------
+# ==================================================
 # SIDEBAR
-# --------------------------------------------------
+# ==================================================
 
 with st.sidebar:
 
-    st.markdown("## 🎯 Study Settings")
+    st.markdown("## 🎓 Study Tutor")
+
+    st.caption(
+        "Your personal AI learning assistant"
+    )
+
+    st.divider()
+
+
+    # Subject
 
     subject = st.selectbox(
-        "Subject",
+        "📚 Subject",
+
         [
             "General",
             "Chemistry",
@@ -144,8 +265,12 @@ with st.sidebar:
         ],
     )
 
+
+    # Student level
+
     level = st.selectbox(
-        "Your Level",
+        "🎯 Your Level",
+
         [
             "Beginner",
             "Intermediate",
@@ -153,34 +278,102 @@ with st.sidebar:
         ],
     )
 
+
     st.divider()
 
-    st.markdown("### 🧠 Memory")
+
+    # Memory section
+
+    st.markdown("### 🧠 Conversation Memory")
 
     st.caption(
-        "The tutor remembers the conversation during your current session."
+        "Your tutor remembers the conversation "
+        "during the current session."
     )
 
-    if st.button("🗑️ Clear Conversation"):
+
+    if st.button(
+        "🗑️ Clear Conversation"
+    ):
+
         clear_memory()
+
         st.rerun()
 
+
     st.divider()
+
+
+    # Example questions
 
     st.markdown("### 💡 Try asking")
 
-    st.caption("Explain photosynthesis simply.")
+    st.caption(
+        "Explain hybridization in simple words."
+    )
 
-    st.caption("Make me a study plan for organic chemistry.")
+    st.caption(
+        "Make me a 7-day study plan for chemistry."
+    )
 
-    st.caption("Calculate 25 × 18.")
+    st.caption(
+        "Calculate 25 × 18."
+    )
 
-    st.caption("Quiz me on Newton's laws.")
+    st.caption(
+        "Quiz me about Newton's laws."
+    )
 
 
-# --------------------------------------------------
-# CHAT DISPLAY
-# --------------------------------------------------
+# ==================================================
+# MAIN HEADER
+# ==================================================
+
+st.markdown(
+    '<div class="hero-title">'
+    '🎓 Study Tutor AI'
+    '</div>',
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    '<div class="hero-subtitle">'
+    'Learn smarter. Ask questions. Understand concepts.'
+    '</div>',
+    unsafe_allow_html=True,
+)
+
+
+# ==================================================
+# WELCOME CARD
+# ==================================================
+
+if len(st.session_state.chat_history) == 0:
+
+    st.markdown(
+        """
+        <div class="feature-card">
+
+        <h3>👋 Welcome to Study Tutor</h3>
+
+        <p>
+        Ask me anything about your subject.
+        I can explain difficult concepts,
+        provide examples, help with calculations,
+        and create study plans.
+        </p>
+
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.write("")
+
+
+# ==================================================
+# DISPLAY CHAT HISTORY
+# ==================================================
 
 for message in st.session_state.chat_history:
 
@@ -193,33 +386,58 @@ for message in st.session_state.chat_history:
         )
 
 
-# --------------------------------------------------
-# USER INPUT
-# --------------------------------------------------
+# ==================================================
+# CHAT INPUT
+# ==================================================
 
 user_question = st.chat_input(
     "Ask your Study Tutor anything..."
 )
 
 
+# ==================================================
+# PROCESS QUESTION
+# ==================================================
+
 if user_question:
 
-    # Show user message
+    # -------------------------------
+    # Display user message
+    # -------------------------------
+
     with st.chat_message("user"):
-        st.markdown(user_question)
+
+        st.markdown(
+            user_question
+        )
+
+
+    # Save user message
 
     add_message(
         "user",
         user_question,
     )
 
-    # Get previous conversation
-    memory = get_memory_text()
 
-    # Generate response
+    # -------------------------------
+    # Get conversation memory
+    # -------------------------------
+
+    memory = get_memory_text(
+        max_messages=10
+    )
+
+
+    # -------------------------------
+    # Generate tutor response
+    # -------------------------------
+
     with st.chat_message("assistant"):
 
-        with st.spinner("🧠 Your tutor is thinking..."):
+        with st.spinner(
+            "🧠 Your tutor is thinking..."
+        ):
 
             try:
 
@@ -230,18 +448,25 @@ if user_question:
                     memory=memory,
                 )
 
-                st.markdown(answer)
+                st.markdown(
+                    answer
+                )
+
+
+                # Save AI response
 
                 add_message(
                     "assistant",
                     answer,
                 )
 
+
             except Exception as e:
 
-                error_message = (
-                    "Something went wrong while contacting the tutor.\n\n"
-                    f"Error: `{str(e)}`"
+                st.error(
+                    "⚠️ Something went wrong."
                 )
 
-                st.error(error_message)
+                st.caption(
+                    f"Error details: {str(e)}"
+                )
